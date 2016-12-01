@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import codecs
+import glob
 try:
     import helper
     import rebuild
@@ -24,6 +25,7 @@ except ImportError:
     from . import rebuild
     from . import definition
 
+PROJECT_ROOT=""
 TEMP_PATH="" 
 # [wordsArr,showFunc,path,lineNum,type] type=0 user, 1 lua, 2 cocos2dx
 DEFINITION_LIST=[]
@@ -47,10 +49,11 @@ def init():
 
 def checkQuickxRoot():
     # quick_cocos2dx_root
-    settings = helper.loadSettings("quick-comminuty-dev")
-    quick_cocos2dx_root = settings.get("quick_cocos2dx_root", "")
+    # settings = helper.loadSettings("quick-comminuty-dev")
+    # quick_cocos2dx_root = settings.get("quick_cocos2dx_root", "")
+    quick_cocos2dx_root=PROJECT_ROOT
     if len(quick_cocos2dx_root)==0:
-        sublime.error_message("quick_cocos2dx_root no set")
+        sublime.error_message("quick_cocos2dx_root no set, please run with player")
         return False
     return quick_cocos2dx_root
 
@@ -63,37 +66,66 @@ def checkQuickxRoot():
 #         return False
 #     return cocos2dx_root
 
+def checkPlayerPath(workdir):
+    playerPath=""
+    if sublime.platform()=="osx":
+        playerPath=workdir+"/runtime/mac/*.app"
+    elif sublime.platform()=="windows":
+        playerPath=workdir+"/simulator/win32/*.exe"
+
+    for filename in glob.glob(playerPath):
+        playerPath=filename
+        break
+
+    if playerPath=="" or not os.path.exists(playerPath):
+        sublime.error_message("player no exists")
+        return False
+
+    if sublime.platform()=="osx":
+        playerName=playerPath.split("/")[-1]
+        playerName=playerName.split(".")[0]
+        playerPath=playerPath+"/Contents/MacOS/"+playerName
+
+    return playerPath
+
 process=None
 def runWithPlayer(srcDir):
     global process
+    global PROJECT_ROOT
+    arr=os.path.split(srcDir)
+    workdir=arr[0]
+    PROJECT_ROOT=workdir+"/frameworks/cocos2d-x"
     # root
     quick_cocos2dx_root = checkQuickxRoot()
     if not quick_cocos2dx_root:
         return
     # player path for platform
-    playerPath=""
-    if sublime.platform()=="osx":
-        playerPath=quick_cocos2dx_root+"/quick/player/player3.app/Contents/MacOS/player3"
-    elif sublime.platform()=="windows":
-        playerPath=quick_cocos2dx_root+"/quick/player/win32/player3.exe"
-    if playerPath=="" or not os.path.exists(playerPath):
-        sublime.error_message("player no exists")
+    playerPath=checkPlayerPath(workdir)
+    print(playerPath)
+    if not playerPath:
         return
+
+    # if sublime.platform()=="osx":
+    #     playerPath=arr[0]+"/runtime/mac/test3D-desktop.app/Contents/MacOS/test3D-desktop"
+    # elif sublime.platform()=="windows":
+    #     playerPath=arr[0]+"/simulator/win32/test.exe"
+
+    # if playerPath=="" or not os.path.exists(playerPath):
+    #     sublime.error_message("player no exists")
+    #     return
+
     args=[playerPath]
     # param
-    path=srcDir
-    arr=os.path.split(path)
-    workdir=arr[0]
     srcDirName=arr[1]
     args.append("-workdir")
     args.append(workdir)
     args.append("-file")
     args.append(srcDirName+"/main.lua")
-    configPath=path+"/config.lua"
+    configPath=srcDir+"/config.lua"
     if os.path.exists(configPath):
         f=codecs.open(configPath,"r","utf-8")
-        width=640
-        height=960
+        width="640"
+        height="1136"
         while True:
             line=f.readline()
             if line:

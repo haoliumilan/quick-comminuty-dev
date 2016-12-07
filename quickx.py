@@ -33,7 +33,11 @@ USER_DEFINITION_LIST=[]
 luaTemplate="""--
 -- Author: ${author}
 -- Date: ${date}
---
+--[===[  
+    Class Name:
+    Class Application: 
+    Key Function:
+]===]
 """
 
 # init plugin,load definitions

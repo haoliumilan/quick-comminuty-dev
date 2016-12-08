@@ -34,9 +34,10 @@ luaTemplate="""--
 -- Author: ${author}
 -- Date: ${date}
 --[===[  
-    Class Name:
+    Class Name: 
     Class Application: 
-    Key Function:
+    Key Value: 
+    Key Function: 
 ]===]
 """
 
@@ -82,6 +83,10 @@ def checkPlayerPath(workdir):
         break
 
     if playerPath=="" or not os.path.exists(playerPath):
+        if sublime.platform()=="osx":
+            playerPath="/Applications/Cocos/Library/Simulator.app"
+
+    if playerPath=="" or not os.path.exists(playerPath):
         sublime.error_message("player no exists")
         return False
 
@@ -105,7 +110,6 @@ def runWithPlayer(srcDir):
         return
     # player path for platform
     playerPath=checkPlayerPath(workdir)
-    print(playerPath)
     if not playerPath:
         return
 
@@ -158,6 +162,8 @@ def runWithPlayer(srcDir):
         f.close()
         args.append("-size")
         args.append(width+"x"+height)
+        args.append("-scale")
+        args.append("0.5")
     if process:
         try:
             process.terminate()

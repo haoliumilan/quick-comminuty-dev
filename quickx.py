@@ -233,10 +233,14 @@ class QuickxRunWithPlayerByFileCommand(sublime_plugin.TextCommand):
         # view path
         path=self.view.file_name()
         sublime.status_message(path)
-        index=path.rfind("src"+os.sep)
-        if index==-1:
-            sublime.status_message("This file not in the 'src' folder")
-            return
+        index=path.rfind("supereditor"+os.sep)
+        if index!=-1:
+            path=path[0:index]
+        else:
+            index=path.rfind("src"+os.sep)
+            if index==-1:
+                sublime.status_message("This file not in the 'src' folder")
+                return
         path=path[0:index]+"src"
         runWithPlayer(path)
         

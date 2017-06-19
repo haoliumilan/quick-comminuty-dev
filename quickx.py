@@ -30,15 +30,73 @@ TEMP_PATH=""
 # [wordsArr,showFunc,path,lineNum,type] type=0 user, 1 lua, 2 cocos2dx
 DEFINITION_LIST=[]
 USER_DEFINITION_LIST=[]
+
+
+ 
 luaTemplate="""--
 -- Author: ${author}
 -- Date: ${date}
+-- Name: ${_name}
 --[===[  
     Class Name: 
     Class Application: 
     Key Value: 
     Key Function: 
 ]===]
+
+local tt = tt
+local ${_class} = class("${_class}", tt.BaseNode)
+
+function ${_class}:ctor(func,height)
+  ${_class}.super.ctor(self)
+  self.func = func or function()  end
+  local uiInfo = {
+    {"layout"},
+    {"nineBg"},
+    {"sureBtn","onCallback"},
+  }
+  self.ccsLayer = self:loadCsbFile("csb/XXX/${_class}.csb",uiInfo)
+  self.layout:setContentSize(cc.size(display.width, display.height))
+  self:setNodeEventEnabel()
+  self:onEventListener(handler(self, ${_class}.onTouch))
+end
+
+function ${_class}:onCallback(event)
+  if event.target == self.sureBtn then
+    
+  end
+end
+
+function ${_class}:onEnter()
+
+end
+
+function ${_class}:onExit()
+
+end
+
+function ${_class}:onTouch(event)
+  local enventtype = event.name
+  if enventtype == "began" then
+    return true
+  elseif enventtype == "ended" then
+    local x,y     =   event:getLocation().x, event:getLocation().y
+    local touchPt = self.ccsLayer:convertToNodeSpace(cc.p(x, y))
+    local rect    = self["nineBg"]:getBoundingBox()
+    if cc.rectContainsPoint(rect ,touchPt) == false  then
+      self:deleteMe(false)
+    end
+  end
+end
+
+function ${_class}:deleteMe(ft)
+  if self.func and type(self.func) == "function"  then
+    self.func(ft)
+  end
+end
+
+return ${_class}
+
 """
 
 # init plugin,load definitions
@@ -159,6 +217,9 @@ def runWithPlayer(srcDir):
                     height=m.group(1)
             else:
                 break
+        code="return "+ datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        configPath2=srcDir+"/BuildVersion.lua"
+        helper.writeFile(configPath2, code)
         f.close()
         args.append("-size")
         args.append(width+"x"+height)
@@ -198,6 +259,13 @@ class LuaNewFileCommand(sublime_plugin.WindowCommand):
             code = code.replace("${date}", date)
             author=settings.get("author", "Your Name")
             code = code.replace("${author}", author)
+            
+            _name=settings.get("_name", name)
+            code = code.replace("${_name}", _name)
+
+            _myclass = _name.split('.')[0]
+            code = code.replace("${_class}", _myclass)
+
             # save
             helper.writeFile(filePath, code)
             v=sublime.active_window().open_file(filePath)
@@ -234,6 +302,7 @@ class QuickxRunWithPlayerByFileCommand(sublime_plugin.TextCommand):
         path=self.view.file_name()
         sublime.status_message(path)
         index=path.rfind("supereditor"+os.sep)
+        # print(index)        
         if index!=-1:
             path=path[0:index]
         else:

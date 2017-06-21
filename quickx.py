@@ -48,23 +48,23 @@ local tt = tt
 local ${_class} = class("${_class}", tt.BaseNode)
 
 function ${_class}:ctor(func,height)
-  ${_class}.super.ctor(self)
-  self.func = func or function()  end
-  local uiInfo = {
-    {"layout"},
-    {"nineBg"},
-    {"sureBtn","onCallback"},
-  }
-  self.ccsLayer = self:loadCsbFile("csb/XXX/${_class}.csb",uiInfo)
-  self.layout:setContentSize(cc.size(display.width, display.height))
-  self:setNodeEventEnabel()
-  self:onEventListener(handler(self, ${_class}.onTouch))
+    ${_class}.super.ctor(self)
+    self.func = func or function()  end
+    local uiInfo = {
+        {"layout"},
+        {"nineBg"},
+        {"sureBtn","onCallback"},
+    }
+    self.ccsLayer = self:loadCsbFile("csb/XXX/${_class}.csb",uiInfo)
+    self.layout:setContentSize(cc.size(display.width, display.height))
+    self:setNodeEventEnabel()
+    self:onEventListener(handler(self, ${_class}.onTouch))
 end
 
 function ${_class}:onCallback(event)
-  if event.target == self.sureBtn then
+    if event.target == self.sureBtn then
     
-  end
+    end
 end
 
 function ${_class}:onEnter()
@@ -76,23 +76,23 @@ function ${_class}:onExit()
 end
 
 function ${_class}:onTouch(event)
-  local enventtype = event.name
-  if enventtype == "began" then
-    return true
-  elseif enventtype == "ended" then
-    local x,y     =   event:getLocation().x, event:getLocation().y
-    local touchPt = self.ccsLayer:convertToNodeSpace(cc.p(x, y))
-    local rect    = self["nineBg"]:getBoundingBox()
-    if cc.rectContainsPoint(rect ,touchPt) == false  then
-      self:deleteMe(false)
+    local enventtype = event.name
+    if enventtype == "began" then
+        return true
+    elseif enventtype == "ended" then
+        local x,y     =   event:getLocation().x, event:getLocation().y
+        local touchPt = self.ccsLayer:convertToNodeSpace(cc.p(x, y))
+        local rect    = self["nineBg"]:getBoundingBox()
+        if cc.rectContainsPoint(rect ,touchPt) == false  then
+            self:deleteMe(false)
+        end
     end
-  end
 end
 
 function ${_class}:deleteMe(ft)
-  if self.func and type(self.func) == "function"  then
-    self.func(ft)
-  end
+    if self.func and type(self.func) == "function"  then
+        self.func(ft)
+    end
 end
 
 return ${_class}
